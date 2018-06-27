@@ -5,3 +5,4 @@ authors = ["Yannic Rieger"]
 
 [dependencies]
 tokio = "0.1.7"
+bytes = "0.4"

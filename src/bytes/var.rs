@@ -1,5 +1,6 @@
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::io::Error;
+use std::io::ErrorKind;
 
 /// Read a VarInt from the given buffer.
 /// More information of how VarInts are read, can be found on
@@ -11,14 +12,14 @@ pub fn read_var_int(buf: &mut Buf) -> Result<i32, Error> {
     loop {
         read = buf.get_u8();
         let val = read & 0b01111111;
-        result |= (val << (7 * num_read));
+        result |= (val << (7 * num_read)) as i32;
         num_read += 1;
 
         if num_read > 5 {
             return Err(Error::new(ErrorKind::Other, "VarInt too big."));
         }
 
-        if result (read & 0b10000000) == 0 {
+        if (read & 0b10000000) == 0 {
             break;
         }
     }
@@ -28,7 +29,7 @@ pub fn read_var_int(buf: &mut Buf) -> Result<i32, Error> {
 /// Write a VarInt to the given buffer.
 /// More information of how VarInts are written, can be found on
 /// `http://wiki.vg/Protocol#VarInt_and_VarLong`
-pub fn write_var_int(buf: BufMut, val: i32) {
+pub fn write_var_int(buf: &mut BufMut, val: i32) {
     // We have to cast to u32 because arithmetic right shift only works with u32.
     let mut var = val as u32;
     loop {
@@ -54,7 +55,7 @@ pub fn read_var_long(buf: &mut Buf) -> Result<i64, Error> {
     loop {
         read = buf.get_u8();
         let val = read & 0b01111111;
-        result |= (val << (7 * num_read));
+        result |= (val << (7 * num_read)) as i64;
         num_read += 1;
         if num_read > 10 {
             return Err(Error::new(ErrorKind::Other, "VarLong too big."));
@@ -62,14 +63,14 @@ pub fn read_var_long(buf: &mut Buf) -> Result<i64, Error> {
         if (read & 0b10000000) == 0 {
             break;
         }
-        Ok(result);
     }
+    Ok(result)
 }
 
 /// Writes a VarLong to a given buffer.
 /// More information of how VarLongs are written, can be found on
 /// `http://wiki.vg/Protocol#VarInt_and_VarLong`
-pub fn write_var_long(buf: BufMut, value: i64) {
+pub fn write_var_long(buf: &mut BufMut, value: i64) {
     let mut v = value as u64;
     loop {
         let mut tmp = (v & 0b01111111) as u8;

@@ -8,7 +8,6 @@ pub fn read_var_int(buf: &mut Buf) -> Result<i32, Error> {
     let mut num_read = 0;
     let mut result = 0;
     let mut read = 0u8;
-
     loop {
         read = buf.get_u8();
         let val = read & 0b01111111;
@@ -48,7 +47,7 @@ pub fn write_var_int(buf: BufMut, val: i32) {
 /// Reads a VarLong from a given buffer.
 /// More information of how VarLongs are read, can be found on
 /// `http://wiki.vg/Protocol#VarInt_and_VarLong`
-pub fn read_var_long(buf: &mut Buf) -> Result<i32, Error> {
+pub fn read_var_long(buf: &mut Buf) -> Result<i64, Error> {
     let mut num_read = 0;
     let mut result = 0i64;
     let mut read = 0u8;
@@ -67,7 +66,20 @@ pub fn read_var_long(buf: &mut Buf) -> Result<i32, Error> {
     }
 }
 
-
-pub fn write_var_long() {
-
+/// Writes a VarLong to a given buffer.
+/// More information of how VarLongs are written, can be found on
+/// `http://wiki.vg/Protocol#VarInt_and_VarLong`
+pub fn write_var_long(buf: BufMut, value: i64) {
+    let mut v = value as u64;
+    loop {
+        let mut tmp = (v & 0b01111111) as u8;
+        v >>= 7;
+        if v != 0 {
+            tmp |= 0b10000000;
+        }
+        buf.put_u8(tmp);
+        if v == 0 {
+            break;
+        }
+    }
 }

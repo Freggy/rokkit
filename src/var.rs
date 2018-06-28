@@ -2,7 +2,7 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::io::Error;
 
 /// Read a VarInt from the given buffer.
-/// More information about how VarInts are read, can be found on
+/// More information of how VarInts are read, can be found on
 /// `http://wiki.vg/Protocol#VarInt_and_VarLong`
 pub fn read_var_int(buf: &mut Buf) -> Result<i32, Error> {
     let mut num_read = 0;
@@ -27,7 +27,7 @@ pub fn read_var_int(buf: &mut Buf) -> Result<i32, Error> {
 }
 
 /// Write a VarInt to the given buffer.
-/// More information about how VarInts are written, can be found on
+/// More information of how VarInts are written, can be found on
 /// `http://wiki.vg/Protocol#VarInt_and_VarLong`
 pub fn write_var_int(buf: BufMut, val: i32) {
     // We have to cast to u32 because arithmetic right shift only works with u32.
@@ -43,4 +43,31 @@ pub fn write_var_int(buf: BufMut, val: i32) {
             break;
         }
     }
+}
+
+/// Reads a VarLong from a given buffer.
+/// More information of how VarLongs are read, can be found on
+/// `http://wiki.vg/Protocol#VarInt_and_VarLong`
+pub fn read_var_long(buf: &mut Buf) -> Result<i32, Error> {
+    let mut num_read = 0;
+    let mut result = 0i64;
+    let mut read = 0u8;
+    loop {
+        read = buf.get_u8();
+        let val = read & 0b01111111;
+        result |= (val << (7 * num_read));
+        num_read += 1;
+        if num_read > 10 {
+            return Err(Error::new(ErrorKind::Other, "VarLong too big."));
+        }
+        if (read & 0b10000000) == 0 {
+            break;
+        }
+        Ok(result);
+    }
+}
+
+
+pub fn write_var_long() {
+
 }

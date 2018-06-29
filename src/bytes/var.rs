@@ -1,3 +1,4 @@
+/*
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::io::Error;
 use std::io::ErrorKind;
@@ -84,3 +85,4 @@ pub fn write_var_long(buf: &mut BufMut, value: i64) {
         }
     }
 }
+*/
